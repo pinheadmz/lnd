@@ -1,23 +1,43 @@
 #!/usr/bin/env bash
-
 set -ev
 
-BITCOIND_VERSION=$1
+sudo apt install -y \
+  build-essential \
+  pkg-config \
+  curl \
+  ca-certificates \
+  ccache \
+  python3 \
+  rsync \
+  git \
+  procps \
+  bison \
+  e2fsprogs \
+  cmake \
+  libzmq3-dev \
+  libevent-dev \
+  libboost-dev \
+  libsqlite3-dev \
+  libcapnp-dev \
+  capnproto
 
-# Useful for testing RCs: e.g. TAG_SUFFIX=.0rc1, DIR_SUFFIX=.0rc1
-TAG_SUFFIX=
-DIR_SUFFIX=.0
+git clone --depth 1 --branch http-rewrite-13march2025 https://github.com/pinheadmz/bitcoin  
 
-# Useful for testing against an image pushed to a different Docker repo.
-REPO=lightninglabs/bitcoin-core
+cd bitcoin
 
-if [ -z "$BITCOIND_VERSION" ]; then
-  echo "Must specify a version of bitcoind to install."
-  echo "Usage: install_bitcoind.sh <version>"
-  exit 1
-fi
+cmake -B build \
+  -DWITH_ZMQ=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_GUI=OFF \
+  -DBUILD_BENCH=OFF \
+  -DBUILD_FOR_FUZZING=OFF \
+  -DBUILD_KERNEL_LIB=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DBUILD_TESTS=OFF \
+  -DBUILD_TX=OFF \
+  -DBUILD_UTIL=OFF \
+  -DBUILD_WALLET_TOOL=OFF
+cmake --build build -j$(nproc)
 
-docker pull ${REPO}:${BITCOIND_VERSION}${TAG_SUFFIX}
-CONTAINER_ID=$(docker create ${REPO}:${BITCOIND_VERSION}${TAG_SUFFIX})
-sudo docker cp $CONTAINER_ID:/opt/bitcoin-${BITCOIND_VERSION}${DIR_SUFFIX}/bin/bitcoind /usr/local/bin/bitcoind
-docker rm $CONTAINER_ID
+sudo mv build/bin/bitcoind /usr/local/bin/bitcoind
+bitcoind --version
