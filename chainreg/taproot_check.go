@@ -48,6 +48,7 @@ func backendSupportsTaproot(rpc *rpcclient.Client) bool {
 	}
 
 	info := struct {
+		ScriptFlags []string `json:"script_flags"`
 		Deployments map[string]struct {
 			Type   string `json:"type"`
 			Active bool   `json:"active"`
@@ -59,6 +60,19 @@ func backendSupportsTaproot(rpc *rpcclient.Client) bool {
 		return false
 	}
 
+	// Before Bitcoin Core v31, taproot was still included as a BIP9 deployment.
 	_, ok := info.Deployments["taproot"]
-	return ok
+
+	// Since v31, taproot is activated at genesis and no longer appears
+	// as a deployment. Also in v31, Bitcoin Core added a "script_flags"
+	// field to getdeploymentinfo which lists all the verification flags.
+	hasFlag := false
+	for _, f := range info.ScriptFlags {
+		if f == "TAPROOT" {
+			hasFlag = true
+			break
+		}
+	}
+
+	return ok || hasFlag
 }
