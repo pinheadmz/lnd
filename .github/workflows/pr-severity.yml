@@ -1,0 +1,7 @@
+# Disabled: PR severity classification requires CLAUDE_CODE_OAUTH_TOKEN secret
+# which is not available in this fork. Overriding the upstream workflow to prevent failures.
+name: PR Severity Classification
+on:
+  pull_request_target:
+    types: [opened, synchronize, labeled]
+jobs: {}
