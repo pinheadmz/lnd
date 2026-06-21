@@ -7,7 +7,7 @@ set -ev
 # version argument; the image tag is pinned here.
 REPO=pinheadmz/bitcoin
 BITCOIND_VERSION=pr35182
-TAG_SUFFIX=-ddefe4263b
+TAG_SUFFIX=-bb0e968
 
 docker pull ${REPO}:${BITCOIND_VERSION}${TAG_SUFFIX}
 CONTAINER_ID=$(docker create ${REPO}:${BITCOIND_VERSION}${TAG_SUFFIX})
